@@ -21,7 +21,7 @@ void load(char* filename, int* board) {
 
 	for(int i=0; i < N; i++) {
 		for(int j=0; j < N; j++) {
-			if(!fscanf(f, "%c", &tmpBuff)) {
+			if(!fscanf(f, "%c\n", &tmpBuff)) {
 				printf("Error reading char\n");
 				return;
 			}
@@ -41,7 +41,17 @@ void printBoard(int *board) {
         for (int j = 0; j < N; j++) {
             printf("%d ", board[i*N + j]);
         }
+        printf("\n");
     }
+}
+
+__global__
+void genChildBoards(int* frontierBoards,
+					int* childBoards,
+					int total_boards,
+					int* emptySpaces,
+					int* emptySpacesCount) {
+	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
 }
 
 
@@ -57,6 +67,19 @@ int main(int argc, char* argv[]) {
     int* board = new int[N*N];
     load(filename, board);
 
-    printBoard(board);
+    //ToDo: optimize block sizes
+    int numBlocks = 512;
+    int threadsPerBlock = 256; 
+
+    dim3 dimGrid(numBlocks, 1, 1);
+    dim3 dimBlock(threadsPerBlock, 1, 1);
+
+    //space to allocate for boards generated from BFS
+    // const int maxBoardsGen = pow(2,26);
+
+    genChildBoards<<<dimGrid, dimBlock>>>
+    	();
+
+    // printBoard(board);
 	return 0;
 }
