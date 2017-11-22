@@ -3,7 +3,8 @@
 #include <cmath>
 #include <vector>
 #include <fstream>
-#include <cstring>
+#include <iostream>
+#include <string>
 #include <algorithm>
 #include <curand.h>
 
@@ -42,15 +43,33 @@ void load(char* filename, int* board) {
 		}
 	}
 
+	fclose(f);
+
 }
 
-void printBoard(int *board) {
+void printBoard(int* board) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            printf("%d ", board[i*N + j]);
+            printf("%d", board[i*N + j]);
         }
         printf("\n");
     }
+}
+
+void writeBoard(std::string fn, int* board) {
+	std::ofstream f;
+	std::string filename = fn + ".sol";
+	
+	f.open(filename);
+	
+	for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            f << std::to_string(board[i*N + j]);
+        }
+        f << "\n";
+    }
+
+	f.close();
 }
 
 __global__
@@ -258,18 +277,14 @@ void findSolution(int* boards,
 				int* emptySpacesCount,
 				int* found,
 				int* solution) {
-	int idx = blockDim.x * gridDim.x + threadIdx.x;
+	int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
 	int* curBoard;
 	int* curEmptySpace;
 	int curEmptySpaceCount;
 
-	while((*found == 0) && (idx < numBoards)) {
+	while ((*found == 0) && (idx < numBoards)) {
 		int emptyIdx = 0;
-
-		# if __CUDA_ARCH__>=200
-			printf("hello world\n");
-		#endif
 
 		curBoard = boards + idx*N*N;
 		curEmptySpace = emptySpaces + idx*N*N;
@@ -296,9 +311,9 @@ void findSolution(int* boards,
 		// #endif  
 
 		if(emptyIdx == curEmptySpaceCount) {
-			# if __CUDA_ARCH__>=200
-				printf("found solution \n");
-			#endif  
+			// # if __CUDA_ARCH__>=200
+			// 	printf("found solution \n");
+			// #endif  
 			*found = 1;
 
 			for(int i=0; i < N*N; i++) {
@@ -318,6 +333,8 @@ int main(int argc, char* argv[]) {
     }
 
     char* filename = argv[1];
+    char* delim = ".";
+    char* fn = strtok(strdup(filename), delim); //used for output
     
     //store board as flattened 9*9 int array
     int* board = new int[N*N];
@@ -376,7 +393,7 @@ int main(int argc, char* argv[]) {
     }
 
     cudaMemcpy(&totalBoards, d_boardIdx, sizeof(int), cudaMemcpyDeviceToHost);
-    printf("total boards: %d\n", totalBoards);
+    // printf("total boards: %d\n", totalBoards);
 
     int* d_found;
     int* d_solution; //solved board
@@ -405,7 +422,9 @@ int main(int argc, char* argv[]) {
     int* h_solution = new int[N*N];
     cudaMemset(h_solution, 0, N*N*sizeof(int));
     cudaMemcpy(h_solution, d_solution, N*N*sizeof(int), cudaMemcpyDeviceToHost);
+    
     printBoard(h_solution);
+    writeBoard(fn, h_solution);
 
     delete[] board;
     delete[] h_solution;
