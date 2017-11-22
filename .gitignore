@@ -5,4 +5,8 @@
 *.cubin
 *.fatbin
 *.exe
+*.exp
+*.lib
+*.txt
 *.o
+*.sol
