@@ -4,9 +4,9 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <algorithm>
 #include <curand.h>
+#include <string>
 
 #define N 9
 #define n 3
@@ -59,12 +59,14 @@ void printBoard(int* board) {
 void writeBoard(std::string fn, int* board) {
 	std::ofstream f;
 	std::string filename = fn + ".sol";
+
+	// printf(filename.c_str());
 	
 	f.open(filename);
 	
 	for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            f << std::to_string(board[i*N + j]);
+            f << board[i*N + j];
         }
         f << "\n";
     }
@@ -334,7 +336,7 @@ int main(int argc, char* argv[]) {
 
     char* filename = argv[1];
     char* delim = ".";
-    char* fn = strtok(strdup(filename), delim); //used for output
+    std::string fn = strtok(strdup(filename), delim); //used for output
     
     //store board as flattened 9*9 int array
     int* board = new int[N*N];
