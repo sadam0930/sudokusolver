@@ -425,7 +425,7 @@ int main(int argc, char* argv[]) {
     cudaMemset(h_solution, 0, N*N*sizeof(int));
     cudaMemcpy(h_solution, d_solution, N*N*sizeof(int), cudaMemcpyDeviceToHost);
     
-    printBoard(h_solution);
+    // printBoard(h_solution);
     writeBoard(fn, h_solution);
 
     delete[] board;
